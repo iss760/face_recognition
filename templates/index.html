@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>VIDEO PLAY</title>
+    </head>
+    <body>
+
+    <video id = "myVideo" width="900px" height="550px" controls>
+        <source src="{{url_for ('static', filename='lecture.mp4')}}">
+    </video>
+
+
+     <video id="video" width="320" height="420" autoplay></video>
+
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+
+    <canvas id="canvas" width="640" height="480"></canvas>
+        <!-- <button id="download" download="myImage.jpg" href="" onclick="download_img(this);">Download to myImage.jpg</button> -->
+
+<!--        <a id="download" download="myImage.jpg" href="" onclick="download_img(this);">Download to myImage.jpg</a>-->
+    </body>
+
+    <script
+		src="https://code.jquery.com/jquery-3.4.1.min.js"
+  		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  		crossorigin="anonymous">
+    </script>
+
+    <script type="text/javascript">
+
+        var count = 0;
+
+<!--        function vid_play_pause() {-->
+<!--            var myVideo = document.getElementById("myVideo");-->
+
+<!--            if (myVideo.paused) {-->
+<!--                myVideo.play();-->
+<!--            }-->
+<!--            else {-->
+<!--                myVideo.pause();-->
+<!--            }-->
+<!--        }-->
+
+<!--        function vid_stop(){-->
+<!--            count++;-->
+
+<!--            if(count == 5){-->
+<!--                myVideo.pause();-->
+<!--                alert('얼굴인식이 제대로 되지 않습니다.');-->
+<!--                count = 0;-->
+<!--            }-->
+<!--        }-->
+
+        // var result = Math.floor(Math.random() * 10) + 1; // 10초에 한번씩
+        // document.write("random : " + result);
+
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var video = document.getElementById('video');
+        var mediaConfig =  { video: true };
+
+  // Put event listeners into place
+  window.addEventListener("DOMContentLoaded", function() {
+			// Grab elements, create settings, etc.
+
+            var errBack = function(e) {
+            	console.log('An error has occurred!', e)
+            };
+
+			// Put video listeners into place
+            if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia(mediaConfig).then(function(stream) {
+					//video.src = window.URL.createObjectURL(stream);
+					video.srcObject = stream;
+                    video.play();
+                });
+            }
+
+            /* Legacy code below! */
+            else if(navigator.getUserMedia) { // Standard
+				navigator.getUserMedia(mediaConfig, function(stream) {
+					video.src = stream;
+					video.play();
+				}, errBack);
+			} else if(navigator.webkitGetUserMedia) { // WebKit-prefixed
+				navigator.webkitGetUserMedia(mediaConfig, function(stream){
+					video.src = window.webkitURL.createObjectURL(stream);
+					video.play();
+				}, errBack);
+			} else if(navigator.mozGetUserMedia) { // Mozilla-prefixed
+				navigator.mozGetUserMedia(mediaConfig, function(stream){
+					video.src = window.URL.createObjectURL(stream);
+					video.play();
+				}, errBack);
+			}
+
+			// Trigger photo take
+
+
+		}, false);
+
+
+            download_img = function(el) {
+  // get image URI from canvas object
+  var imageURI = canvas.toDataURL("image/jpg");
+  console.log(imageURI);
+  el.href = imageURI;
+};
+
+
+setInterval(function() {
+context.drawImage(video, 0, 0, 640, 480);
+    var imageURI = canvas.toDataURL("image/jpg");
+    var myVideo = document.getElementById("myVideo");
+<!--    console.log(imageURI);-->
+<!--    console.log("my name is jiwon");-->
+    $.ajax({
+        type: "POST",
+        url: "/upload",
+        data: {
+            image: imageURI
+        }}).done(function(data) {
+        console.log(data);
+            if(data == 1){
+                myVideo.play();
+            }else if(data == 0){
+<!--                myVideo.pause();-->
+                alert('얼굴 인식이 실패했습니다');
+            } else{
+                myVideo.pause();
+                alert('얼굴 인식이 실패로 강의가 중지됩니다.');
+            }
+        }
+    );
+}, 10000);
+
+
+    </script>
+
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+video {
+	width: 307px;
+	height: 250px;
+	background: rgba(255, 255, 255, 0.5);
+	border: 1px solid #ccc;
+}
+.grayscale {
+	-webkit-filter: grayscale(1);
+	-moz-filter: grayscale(1);
+	-o-filter: grayscale(1);
+	-ms-filter: grayscale(1);
+	filter: grayscale(1);
+}
+.sepia {
+	-webkit-filter: sepia(1);
+	-moz-filter: sepia(1);
+	-o-filter: sepia(1);
+	-ms-filter: sepia(1);
+	filter: sepia(1);
+}
+.blur {
+	-webkit-filter: blur(3px);
+	-moz-filter: blur(3px);
+	-o-filter: blur(3px);
+	-ms-filter: blur(3px);
+	filter: blur(3px);
+}
+</style>
+
+</head>
+<body>
+<h3>얼굴 등록</h3>
+
+<p>화면을 클릭해서 캡쳐해주세요.</p>
+
+<video width="400" height="300" autoplay></video>
+<div id="snapshots"></div>
+<canvas width="400" height="300" style="display:none;"></canvas>
+
+</body>
+
+<script
+		src="https://code.jquery.com/jquery-3.4.1.min.js"
+  		integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+  		crossorigin="anonymous">
+
+    </script>
+<script type="text/javascript">
+window.URL = window.URL || window.webkitURL;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+		navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+var video = document.querySelector('video');
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+var localMediaStream = null;
+function snapshot() {
+	if (localMediaStream) {
+		ctx.drawImage(video, 0, 0, 400, 300);
+		//var img = document.querySelector('img');
+		var snapshots = document.querySelector('#snapshots');
+		var img = document.createElement('img');
+		img.src = canvas.toDataURL('image/jpg');
+		img.width = 400 / 4;
+		img.height = 300 / 4;
+		//snapshots.appendChild(img);
+		snapshots.insertBefore(img, snapshots.firstChild);
+	$.ajax({
+        type: "POST",
+        url: "/cloudupload",
+        data: {
+            image: img.src
+        }}).done(function(data) {
+        console.log(data);
+            if(data == true){
+                alert("얼굴등록이 완료되었습니다.");
+                location.href = "/";
+            }else{
+
+                alert('얼굴 등록이 실패했습니다');
+            }
+        }
+    );
+	}
+
+}
+video.addEventListener('click', snapshot, false);
+var onFailSoHard = function (e) {
+	console.log("Rejected!", e);
+};
+navigator.getUserMedia({video: true}, function (stream) {
+<!--	video.src = window.URL.createObjectURL(stream);-->
+video.srcObject = stream;
+	localMediaStream = stream;
+}, onFailSoHard);
+</script>
+</html>
